@@ -1,1 +1,1 @@
-![[ukol2.svg]]
+![[ukol2.png]]

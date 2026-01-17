@@ -4,19 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "98e01250b242b82b",
+        "id": "754ecb22b0f1833f",
         "type": "tabs",
         "children": [
           {
-            "id": "21a77d838eaf20f2",
+            "id": "19bdd96347934173",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "markdown",
               "state": {
-                "file": "ukol1.pdf"
+                "file": "ukol2.md",
+                "mode": "preview",
+                "source": true
               },
-              "icon": "lucide-file-text",
-              "title": "ukol1"
+              "icon": "lucide-file",
+              "title": "ukol2"
             }
           }
         ]
@@ -92,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "ukol1.pdf",
+                "file": "ukol2.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Zpětné odkazy pro ukol1"
+              "title": "Zpětné odkazy pro ukol2"
             }
           },
           {
@@ -111,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "ukol1.pdf",
+                "file": "ukol2.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Odchozí odkazy z ukol1"
+              "title": "Odchozí odkazy z ukol2"
             }
           },
           {
@@ -154,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "ukol1.pdf",
+                "file": "ukol2.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Přehled ukol1"
+              "title": "Přehled ukol2"
             }
           },
           {
@@ -192,16 +194,17 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "21a77d838eaf20f2",
+  "active": "19bdd96347934173",
   "lastOpenFiles": [
+    "ukol2.drawio",
+    "ukol2.png",
+    "ukol2.svg",
+    "ukol1.pdf",
     "ukol2.md",
     "Untitled Diagram.svg",
-    "ukol2.svg",
-    "ukol2.drawio",
     "documents/feedback_loop.png",
     "Nepotvrzeno 725014.crdownload",
     "documents/Nepotvrzeno 987919.crdownload",
-    "ukol1.md",
-    "ukol1.pdf"
+    "ukol1.md"
   ]
 }
