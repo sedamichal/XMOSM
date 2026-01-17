@@ -1,0 +1,207 @@
+{
+  "main": {
+    "id": "77e8e155ad1e4b4b",
+    "type": "split",
+    "children": [
+      {
+        "id": "98e01250b242b82b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "21a77d838eaf20f2",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "ukol1.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "ukol1"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "1c332049e5f45a64",
+    "type": "split",
+    "children": [
+      {
+        "id": "09866922205b01c3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "fa7889ba17d6255c",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Průzkumník souborů"
+            }
+          },
+          {
+            "id": "3e11be05e9d2a6da",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Hledat"
+            }
+          },
+          {
+            "id": "81a1d9bf139e458a",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Záložky"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "53c332f59d2ed666",
+    "type": "split",
+    "children": [
+      {
+        "id": "26fcadd1fefcbef1",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cd358ed770942461",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "ukol1.pdf",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Zpětné odkazy pro ukol1"
+            }
+          },
+          {
+            "id": "86fc8dfe292e3acb",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "ukol1.pdf",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Odchozí odkazy z ukol1"
+            }
+          },
+          {
+            "id": "daa07ca5537b4da6",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "1bcfb0dc1c3a69ca",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Všechny vlastnosti"
+            }
+          },
+          {
+            "id": "a476aca6587c291a",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "ukol1.pdf",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Přehled ukol1"
+            }
+          },
+          {
+            "id": "842cac5c321b7e0a",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
+          }
+        ],
+        "currentTab": 5
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Otevřít rychlé přepínání": false,
+      "graph:Otevřít graf": false,
+      "canvas:Vytvořit nový canvas": false,
+      "daily-notes:Otevřít dnešní poznámku": false,
+      "templates:Vložit šablonu": false,
+      "command-palette:Otevřít paletu příkazů": false,
+      "bases:Create new base": false,
+      "obsidian-git:Open Git source control": false
+    }
+  },
+  "active": "21a77d838eaf20f2",
+  "lastOpenFiles": [
+    "ukol2.md",
+    "Untitled Diagram.svg",
+    "ukol2.svg",
+    "ukol2.drawio",
+    "documents/feedback_loop.png",
+    "Nepotvrzeno 725014.crdownload",
+    "documents/Nepotvrzeno 987919.crdownload",
+    "ukol1.md",
+    "ukol1.pdf"
+  ]
+}
