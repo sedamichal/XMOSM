@@ -85,12 +85,14 @@ Sekce B: Přírodní vědy
 
 ---
 
-## 2. DYNAMICKÝ SYSTÉM: KAVÁRNA (Systém obsluhování zákazníků)
+## 2. DYNAMICKÝ SYSTÉM: KAVÁRNA
 
-### 2.1 Popis systému
+### 2.1 Americká kavárna (Starbucs, CostaCofee)
+
+#### 2.1.1 Popis systému
 Kavárna jako dynamický systém, kde sledujeme pohyb zákazníků, přípravu objednávek a obsluhu stolů v čase.
 
-### 2.2 Blokové schéma toku
+#### 2.1.2 Blokové schéma toku
 
 ```
 ┌────────────────────────────────────────────────────────────┐
@@ -108,7 +110,7 @@ Kavárna jako dynamický systém, kde sledujeme pohyb zákazníků, přípravu o
 │               ┌──────────┐         ┌──────────┐      │     │
 │               │  Fronta  │←────────│Objednávka│      │     │
 │               │   na     │         │ předána  │      │     │
-│               │  nápoje  │         └──────────┘      │     │
+│               │  výdej   │         └──────────┘      │     │
 │               └─────┬────┘                           │     │
 │                     │                                │     │
 │                     ▼                                │     │
@@ -118,10 +120,10 @@ Kavárna jako dynamický systém, kde sledujeme pohyb zákazníků, přípravu o
 │               └─────┬────┘                           │     │
 │                     │                                │     │
 │                     ▼                                │     │
-│               ┌──────────┐         ┌──────────┐      │     │
-│               │  Výdej   │────────→│ Zákazník │──---─┼────→│
-│               │  nápojů  │         │ odchází  │      │     │
-│               └──────────┘         └──────────┘      ▼     │
+│               ┌───────────┐        ┌──────────┐      │     │
+│               │ Výdej     │───────→│ Zákazník │──────┼────→│
+│               │ objednávky│        │ odchází  │      │     │
+│               └───────────┘        └──────────┘      ▼     │
 │                     ▲                                      │
 │                     │                           ┌────────┐ |
 │    PARALELNĚ:       │                           │ Odchod │ |
@@ -132,7 +134,7 @@ Kavárna jako dynamický systém, kde sledujeme pohyb zákazníků, přípravu o
 └────────────────────────────────────────────────────────────┘
 ```
 
-### 2.3 Prvky systému
+#### 2.1.3 Prvky systému
 
 | Prvek | Atributy | Typ |
 |-------|----------|-----|
@@ -140,11 +142,11 @@ Kavárna jako dynamický systém, kde sledujeme pohyb zákazníků, přípravu o
 | **Pokladna** | stav (volná/obsazená), aktuální_zákazník | Obsluhovací místo |
 | **Barista** | ID, stav, rychlost, aktuální_úkol | Zdroj (2 instance) |
 | **Fronta_pokladna** | délka, max_kapacita, FIFO_seznam | Fronta |
-| **Fronta_nápoje** | seznam_objednávek, priorita | Fronta |
+| **Fronta_výdeje** | seznam_objednávek, priorita | Fronta |
 | **Stolek** | ID, obsazenost, kapacita | Statický zdroj |
 | **Objednávka** | ID, typ_nápoje, čas_vytvoření, čas_dokončení | Úkol |
 
-### 2.4 Stavy a přechody zákazníka
+#### 2.1.4 Stavy a přechody zákazníka
 
 ```
   ┌──────────┐
@@ -174,7 +176,7 @@ Kavárna jako dynamický systém, kde sledujeme pohyb zákazníků, přípravu o
        ▼               ▼
 ┌──────────────┐  ┌──────────────┐
 │ Hledání      │  │ Vyzvednutí   │
-│ stolku       │  │ nápoje       │
+│ stolku       │  │ objednávky   │
 └──────┬───────┘  └──────┬───────┘
        │                 │
        ▼                 │
@@ -191,16 +193,16 @@ Kavárna jako dynamický systém, kde sledujeme pohyb zákazníků, přípravu o
           └──────────┘
 ```
 
-### 2.5 Pravidla chování systému
+#### 2.1.5 Pravidla chování systému
 
-#### Pravidlo 1: Příchod zákazníků
+##### Pravidlo 1: Příchod zákazníků
 ```
 Poissonův proces s parametrem λ = 12 zákazníků/hodinu
 Interval mezi příchody: exponenciální rozdělení
 Průměrný interval = 60/12 = 5 minut
 ```
 
-#### Pravidlo 2: Obsluha u pokladny
+##### Pravidlo 2: Obsluha u pokladny
 ```
 IF fronta_pokladna.isEmpty() AND pokladna.stav == "volná" THEN
     pokladna.obsluž_dalšího()
@@ -208,7 +210,7 @@ IF fronta_pokladna.isEmpty() AND pokladna.stav == "volná" THEN
 Doba obsluhy: normální rozdělení N(μ=2, σ=0.5) minut
 ```
 
-#### Pravidlo 3: Příprava nápoje
+##### Pravidlo 3: Příprava nápoje
 ```
 barista = najdi_volného_baristu()
 IF barista != NULL AND fronta_nápoje.notEmpty() THEN
@@ -222,7 +224,7 @@ Doba přípravy dle typu:
 - Čaj: 2 min
 ```
 
-#### Pravidlo 4: Hledání stolku
+##### Pravidlo 4: Hledání stolku
 ```
 IF zákazník.typ == "k sezení" THEN
     stolek = najdi_volný_stolek()
@@ -235,13 +237,13 @@ ELSE
     zákazník.odnes_a_odejdi()
 ```
 
-#### Pravidlo 5: Doba konzumace
+##### Pravidlo 5: Doba konzumace
 ```
 Doba u stolu: normální rozdělení N(μ=25, σ=10) minut
 Po konzumaci: stolek.uvolni()
 ```
 
-#### Pravidlo 6: Trpělivost
+##### Pravidlo 6: Trpělivost
 ```
 IF čekání_ve_frontě > zákazník.trpělivost THEN
     zákazník.odejdi_nespokojen()
@@ -249,7 +251,7 @@ IF čekání_ve_frontě > zákazník.trpělivost THEN
 Trpělivost: rovnoměrné rozdělení U(5, 15) minut
 ```
 
-### 2.6 Události v systému
+##### 2.1.6 Události v systému
 
 | Událost | Podmínka spuštění | Akce |
 |---------|-------------------|------|
@@ -262,7 +264,7 @@ Trpělivost: rovnoměrné rozdělení U(5, 15) minut
 | **Opuštění_stolku** | Čas = t_sezení + doba_konzumace | Uvolni stolek, odejdi |
 | **Ztráta_trpělivosti** | Čas_čekání > trpělivost | Zákazník odchází |
 
-### 2.7 Metriky systému
+#### 2.1.7 Metriky systému
 
 ```
 1. Průměrná doba v systému: E[T_systém]

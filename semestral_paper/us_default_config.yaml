@@ -1,0 +1,120 @@
+main:
+  label: Hlavní parametry
+  arrival_rate:
+    type: IntSlider
+    label: 'Příchody/hod:'
+    min: 5
+    max: 30
+    default: 10
+  num_cashiers:
+    type: IntSlider
+    label: 'Počet pokladen:'
+    min: 1
+    max: 3
+    default: 2
+  num_baristas:
+    type: IntSlider
+    label: 'Počet baristů:'
+    min: 1
+    max: 5
+    default: 4
+  cashier_time_mean:
+    type: FloatSlider
+    label: 'Čas u pokladny prům. (min):'
+    min: 0.5
+    max: 5.0
+    step: 0.1
+    default: 1.8
+  cashier_time_std:
+    type: FloatSlider
+    label: 'Čas u pokladny st. odch. (min):'
+    min: 0.5
+    max: 5.0
+    step: 0.1
+    default: 1.8
+  consumption_time_mean:
+    type: FloatSlider
+    label: 'Čas konzumace prům. (min):'
+    min: 0.5
+    max: 5.0
+    step: 0.1
+    default: 1.8
+  consumption_time_std:
+    type: FloatSlider
+    label: 'Čas konzumace st. odch. (min):'
+    min: 0.5
+    max: 5.0
+    step: 0.1
+    default: 1.8
+  queue_patience_mean:
+    type: FloatSlider
+    label: 'Trpělivost pro frontu prům. (min):'
+    min: 0
+    max: 20
+    step: 0.1
+    default: 6
+  queue_patience_std:
+    type: FloatSlider
+    label: 'Trpělivost pro frontu st. odch. (min):'
+    min: 0
+    max: 5
+    step: 0.1
+    default: 2
+  p_wants_table:
+    type: FloatSlider
+    label: 'Chce si sednout:'
+    min: 0.0
+    max: 1.0
+    step: 0.1
+    default: 0.6
+  num_table_places:
+    type: FloatSlider
+    label: 'Počet míst u stolu:'
+    min: 5
+    max: 50
+    step: 1
+    default: 10
+  simulation_time:
+    type: FloatSlider
+    label: 'Doba běhu simulace:'
+    min: 0.0
+    max: 10.0
+    step: 0.1
+    default: 2.0
+  simulation_step:
+    type: FloatSlider
+    label: 'Krok simulace (sec):'
+    min: 1
+    max: 180
+    step: 1
+    default: 1
+drink_wait:
+  label: Časy nápojů
+  espresso:
+    type: FloatSlider
+    label: 'Espresso:'
+    min: 0.0
+    max: 10.0
+    step: 0.1
+    default: 3.6
+  cappuccino:
+    type: FloatSlider
+    label: 'Cappuccino:'
+    min: 0.0
+    max: 10.0
+    step: 0.1
+    default: 5.7
+  tea:
+    type: FloatSlider
+    label: 'Čaj:'
+    min: 0.0
+    max: 10.0
+    step: 0.1
+    default: 2.5
+  matcha:
+    type: FloatSlider
+    label: 'Matcha:'
+    min: 0.0
+    max: 10.0
+    step: 0.1
+    default: 4.2
