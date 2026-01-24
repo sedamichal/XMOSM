@@ -21,7 +21,6 @@ from sim_configuration import ConfigurationManager, ConfigNode, seconds_to_hms
 
 
 class StatusLog:
-
     def __init__(self, min_time=0, max_time=1440, total_table_capacity=0):
         self._log = []
         self._min_time = float(min_time)
@@ -37,26 +36,18 @@ class StatusLog:
         # Fixní X škála pro všechny grafy stejná
         x_sc = LinearScale(min=self._min_time, max=self._max_time)
         y_sc_q = LinearScale(min=0.0)
-        y_sc_c = LinearScale(
-            min=0.0,
-        )
+        y_sc_c = LinearScale(min=0.0,)
         y_sc_s = LinearScale(min=0.0)
 
-        # 1. Graf: Fronty + Obsazená sedadla + kapacita stolu
+        # 1. Graf: Fronty + Obsazená sedadla + KAPACITA STOLŮ
         self._queue_lines = Lines(
             x=[],
             y=[],
             scales={"x": x_sc, "y": y_sc_q},
             colors=["#E74C3C", "#F1C40F", "#2ECC71", "#95A5A6"],
-            labels=[
-                "Fronta u pokladny",
-                "Čekající na nápoj",
-                "Obsazená sedadla",
-                "Kapacita stolů",
-            ],
+            labels=["Fronta u pokladny", "Čekající na nápoj", "Obsazená sedadla", "Kapacita stolů"],
             display_legend=True,
-            # stroke_width=[2, 2, 2, 1.5],  # 4. čára trochu tenčí
-            opacities=[1.0, 1.0, 1.0, 0.6],  # 4. čára průhlednější
+            opacities=[1.0, 1.0, 1.0, 0.6],
         )
 
         # 2. Graf: Kapacity
@@ -94,9 +85,7 @@ class StatusLog:
             marks=[self._capacity_lines],
             axes=[
                 Axis(scale=x_sc, label="Čas (min)"),
-                Axis(
-                    scale=y_sc_c, orientation="vertical", tick_format="d", num_ticks=5
-                ),
+                Axis(scale=y_sc_c, orientation="vertical", tick_format='d', num_ticks=5),
             ],
             title="Aktuální kapacity",
             layout={"height": "250px", "width": "98%"},
@@ -118,20 +107,19 @@ class StatusLog:
 
     def append(self, **kwargs):
         self._log.append(kwargs)
-
-        
         if self._queue_lines:
             df = pd.DataFrame(self._log)
-
-            # Update Fronty + Sedadla# konstantní pole s kapacitou stolů
-            tables_capacity_line = [self._total_table_capacity] * len(df)
-
+            
+            # Vytvoř konstantní pole s kapacitou stolů
+            capacity_line = [self._total_table_capacity] * len(df)
+            
+            # Update Fronty + Sedadla + Kapacita
             self._queue_lines.x = df["time"].values
             self._queue_lines.y = [
                 df["cashier_queue"].values,
                 df["barista_queue"].values,
                 df["seats_occupied"].values,
-                tables_capacity_line,
+                capacity_line,
             ]
 
             # Update Kapacity
@@ -149,11 +137,122 @@ class StatusLog:
         for f in self._figs:
             f.close()
         self._figs = []
+    
+    def get_metrics(self):
+        """
+        Vypočítá agregované metriky ze zaznamenaných dat.
+        
+        Returns:
+            dict s metrikami
+        """
+        if not self._log:
+            return {}
+        
+        df = pd.DataFrame(self._log)
+        
+        # Ignoruj warmup periodu (první hodinu)
+        warmup_time = 60  # minut
+        df_analysis = df[df['time'] >= (df['time'].min() + warmup_time)]
+        
+        if len(df_analysis) == 0:
+            df_analysis = df
+        
+        metrics = {
+            # Celkové počty (konečné hodnoty)
+            'total_served': int(df['served'].iloc[-1]),
+            'total_reneged': int(df['reneged'].iloc[-1]),
+            'total_customers': int(df['served'].iloc[-1] + df['reneged'].iloc[-1]),
+            
+            # Úspěšnost
+            'success_rate': (df['served'].iloc[-1] / 
+                           (df['served'].iloc[-1] + df['reneged'].iloc[-1]) * 100
+                           if (df['served'].iloc[-1] + df['reneged'].iloc[-1]) > 0 else 0),
+            
+            # Průměrné délky front
+            'avg_cashier_queue': float(df_analysis['cashier_queue'].mean()),
+            'avg_barista_queue': float(df_analysis['barista_queue'].mean()),
+            'max_cashier_queue': int(df_analysis['cashier_queue'].max()),
+            'max_barista_queue': int(df_analysis['barista_queue'].max()),
+            
+            # Obsazení stolů
+            'avg_seats_occupied': float(df_analysis['seats_occupied'].mean()),
+            'max_seats_occupied': int(df_analysis['seats_occupied'].max()),
+            'avg_seats_utilization': (df_analysis['seats_occupied'].mean() / 
+                                     self._total_table_capacity * 100
+                                     if self._total_table_capacity > 0 else 0),
+            
+            # Využití zdrojů (průměrné obsazení / kapacita)
+            'avg_cashier_utilization': (df_analysis['cashier_queue'].mean() / 
+                                       df_analysis['cap_cashier'].mean() * 100
+                                       if df_analysis['cap_cashier'].mean() > 0 else 0),
+            'avg_barista_utilization': (df_analysis['barista_queue'].mean() / 
+                                       df_analysis['cap_barista'].mean() * 100
+                                       if df_analysis['cap_barista'].mean() > 0 else 0),
+        }
+        
+        return metrics
+    
+    def print_summary(self):
+        """Vytiskne přehledné shrnutí metrik."""
+        metrics = self.get_metrics()
+        
+        if not metrics:
+            print("Žádná data k analýze.")
+            return
+        
+        print("\n" + "="*60)
+        print("SOUHRNNÉ METRIKY SIMULACE")
+        print("="*60)
+        
+        print("\n📊 CELKOVÉ STATISTIKY:")
+        print(f"  Celkem příchozích:    {metrics['total_customers']:>6}")
+        print(f"  Obslouženo:           {metrics['total_served']:>6} ({metrics['success_rate']:>5.1f}%)")
+        print(f"  Odešlo (reneged):     {metrics['total_reneged']:>6} ({100-metrics['success_rate']:>5.1f}%)")
+        
+        print("\n📈 FRONTY:")
+        print(f"  Pokladna:")
+        print(f"    Průměrná délka:     {metrics['avg_cashier_queue']:>6.2f} skupin")
+        print(f"    Maximální délka:    {metrics['max_cashier_queue']:>6} skupin")
+        print(f"  Barista:")
+        print(f"    Průměrná délka:     {metrics['avg_barista_queue']:>6.2f} skupin")
+        print(f"    Maximální délka:    {metrics['max_barista_queue']:>6} skupin")
+        
+        print("\n🪑 STOLY:")
+        print(f"  Průměrné obsazení:    {metrics['avg_seats_occupied']:>6.1f} míst ({metrics['avg_seats_utilization']:>5.1f}%)")
+        print(f"  Maximální obsazení:   {metrics['max_seats_occupied']:>6} míst")
+        print(f"  Celková kapacita:     {self._total_table_capacity:>6} míst")
+        
+        print("\n⚙️  VYUŽITÍ ZDROJŮ:")
+        print(f"  Pokladna:             {metrics['avg_cashier_utilization']:>6.1f}%")
+        print(f"  Barista:              {metrics['avg_barista_utilization']:>6.1f}%")
+        
+        print("="*60 + "\n")
+    
+    def export_data(self):
+        """
+        Exportuje časovou řadu dat jako DataFrame.
+        
+        Returns:
+            pandas.DataFrame
+        """
+        if not self._log:
+            return pd.DataFrame()
+        
+        return pd.DataFrame(self._log)
+    
+    def export_metrics_to_dict(self):
+        """
+        Exportuje metriky jako slovník (pro snadné ukládání/porovnání).
+        
+        Returns:
+            dict
+        """
+        return self.get_metrics()
 
 
 class ResourceManager:
     """Spravuje zdroje s časově závislými kapacitami."""
-
+    
     def __init__(self, env, config):
         self.env = env
         self.config = config
@@ -163,9 +262,9 @@ class ResourceManager:
             for rid_str, rnode in config.used_resources.items():
                 if rid_str == "label" or str(rid_str).startswith("_"):
                     continue
-
+                
                 rid = int(rid_str)
-
+                
                 # Získej počáteční kapacitu v čase env.now
                 initial_cap = self._get_capacity_at_time(rnode, env.now)
                 self.resources[rid] = simpy.Resource(env, capacity=initial_cap)
@@ -175,36 +274,34 @@ class ResourceManager:
         Zjistí kapacitu zdroje v daném čase.
         Prochází capacity_counts a hledá odpovídající časový rozsah.
         """
-        if not hasattr(rnode, "capacity_counts"):
+        if not hasattr(rnode, 'capacity_counts'):
             # Fallback - pokud nejsou definovány směny
-            if hasattr(rnode, "capacity"):
+            if hasattr(rnode, 'capacity'):
                 return int(rnode.capacity.value)
             return 1
-
+        
         # Projdi všechny směny
         for shift_id_str, shift_node in rnode.capacity_counts.items():
             if shift_id_str == "label" or str(shift_id_str).startswith("_"):
                 continue
-
-            if not hasattr(shift_node, "time_range"):
+            
+            if not hasattr(shift_node, 'time_range'):
                 continue
-
+            
             # Zjisti časový rozsah směny
             time_range = shift_node.time_range.metadata["range"]
             start, end = time_range[0], time_range[1]
-
+            
             # Pokud je current_time v tomto rozsahu
             if start <= current_time < end:
                 # Vrať kapacitu pro tuto směnu
                 count = shift_node.capacity_count.value
-
+                
                 # Celková kapacita = počet jednotek × kapacita každé
-                unit_capacity = (
-                    rnode.capacity.value if hasattr(rnode, "capacity") else 1
-                )
-
+                unit_capacity = rnode.capacity.value if hasattr(rnode, 'capacity') else 1
+                
                 return int(count * unit_capacity)
-
+        
         # Pokud nejsme v žádné směně, vrať 0 nebo fallback
         return 0
 
@@ -227,7 +324,7 @@ class ResourceManager:
             if rid in self.resources and self.resources[rid].capacity != new_cap:
                 diff = new_cap - self.resources[rid].capacity
                 self.resources[rid]._capacity = new_cap
-
+                
                 # Pokud se kapacita zvýšila, aktivuj čekající requesty
                 if diff > 0:
                     self.resources[rid]._trigger_put(None)
@@ -248,73 +345,65 @@ class TableManager:
                     continue
 
                 capacity = tnode.table_capacity.value
-                count = tnode.tables_count.value
+                count = int(tnode.tables_count.value)
 
                 # Vytvoř 'count' stolů s danou kapacitou
                 for _ in range(count):
                     table_resource = simpy.Resource(env, capacity=capacity)
-                    self.tables.append(
-                        {
-                            "id": table_id,
-                            "capacity": capacity,
-                            "resource": table_resource,
-                        }
-                    )
+                    self.tables.append({
+                        'id': table_id,
+                        'capacity': capacity,
+                        'resource': table_resource
+                    })
                     table_id += 1
-
-    def get_total_capacity(self):
-        """Vrací celkový počet všech míst (kapacitu)."""
-        return sum(t["capacity"] for t in self.tables)
 
     def get_available_seats(self):
         """
         Vrací info o volných místech u všech stolů.
-
+        
         Vrací: list of {'table_id': X, 'capacity': C, 'available': A}
         """
         availability = []
         for table in self.tables:
-            res = table["resource"]
-            available = table["capacity"] - res.count  # Volná místa
-            availability.append(
-                {
-                    "table_id": table["id"],
-                    "capacity": table["capacity"],
-                    "available": available,
-                }
-            )
+            res = table['resource']
+            available = table['capacity'] - res.count  # Volná místa
+            availability.append({
+                'table_id': table['id'],
+                'capacity': table['capacity'],
+                'available': available
+            })
         return availability
 
     def find_best_table_combination(self, group_size):
         """
         Najde optimální kombinaci stolů pro skupinu.
-
+        
         Algoritmus (greedy):
         1. Kontrola, zda je dostatek volných míst
         2. Výběr od největších volných míst
         3. Kontrola samotářů (1 osoba u stolu)
-
+        
         Args:
             group_size: počet osob ve skupině
-
+        
         Vrací: list of {'table_id': X, 'seats_needed': N} nebo None
         """
         availability = self.get_available_seats()
 
         # Filtruj stoly s volnými místy
-        available_tables = [t for t in availability if t["available"] > 0]
+        available_tables = [t for t in availability if t['available'] > 0]
 
         if not available_tables:
             return None
 
         # Celkový počet volných míst
-        total_available = sum(t["available"] for t in available_tables)
+        total_available = sum(t['available'] for t in available_tables)
 
         if total_available < group_size:
             return None
 
         # Greedy: vezmi stoly od největších volných míst
-        available_tables.sort(key=lambda x: x["available"], reverse=True)
+        available_tables.sort(key=lambda x: x['available'], reverse=True)
 
         allocation = []
         remaining = group_size
@@ -324,17 +413,18 @@ class TableManager:
                 break
 
             # Kolik míst u tohoto stolu použijeme?
-            seats_to_use = min(remaining, table["available"])
+            seats_to_use = min(remaining, table['available'])
 
             # Kontrola samotáře: pokud by zbyl 1 člověk a je více míst
             if remaining > seats_to_use and seats_to_use == 1:
                 # Radši vezmi 2 místa (pokud jsou k dispozici)
-                if table["available"] >= 2:
+                if table['available'] >= 2:
                     seats_to_use = 2
 
-            allocation.append(
-                {"table_id": table["table_id"], "seats_needed": seats_to_use}
-            )
+            allocation.append({
+                'table_id': table['table_id'],
+                'seats_needed': seats_to_use
+            })
 
             remaining -= seats_to_use
 
@@ -346,21 +436,21 @@ class TableManager:
     def request_tables(self, allocation):
         """
         Requestuje místa podle alokace.
-
+        
         Args:
             allocation: list of {'table_id': X, 'seats_needed': N}
-
+        
         Vrací: list of (table_resource, [requests])
         """
         all_requests = []
 
         for alloc in allocation:
-            table = self.tables[alloc["table_id"]]
-            resource = table["resource"]
+            table = self.tables[alloc['table_id']]
+            resource = table['resource']
 
             # Request 'seats_needed' míst
             requests = []
-            for _ in range(alloc["seats_needed"]):
+            for _ in range(alloc['seats_needed']):
                 req = resource.request()
                 requests.append(req)
 
@@ -371,17 +461,26 @@ class TableManager:
     def release_tables(self, table_requests):
         """
         Uvolní všechna requestovaná místa.
-
+        
         Args:
             table_requests: list of (table_resource, [requests])
         """
         for resource, requests in table_requests:
             for req in requests:
-                resource.release(req)
+                if req.triggered:
+                    # Request byl splněn -> uvolni
+                    resource.release(req)
+                else:
+                    # Request ještě čeká -> zruš
+                    req.cancel()
 
     def get_total_occupied(self):
         """Vrací celkový počet obsazených míst."""
-        return sum(t["resource"].count for t in self.tables)
+        return sum(t['resource'].count for t in self.tables)
+
+    def get_total_capacity(self):
+        """Vrací celkový počet všech míst (kapacitu)."""
+        return sum(t['capacity'] for t in self.tables)
 
 
 # =================================================================
@@ -402,29 +501,29 @@ class CafeSimulation:
 
     def _sample_distribution(self, param_node):
         """Univerzální vzorkování z distribuce."""
-        if not hasattr(param_node, "metadata"):
+        if not hasattr(param_node, 'metadata'):
             return 0.0
 
-        dist = param_node.metadata.get("dist", {})
-        dist_type = dist.get("type", "lognormvariate")
+        dist = param_node.metadata.get('dist', {})
+        dist_type = dist.get('type', 'lognormvariate')
 
-        if dist_type == "lognormvariate":
-            desired_mean = dist["mean"]["value"]
-            desired_std = dist["std"]["value"]
+        if dist_type == 'lognormvariate':
+            desired_mean = dist['mean']['value']
+            desired_std = dist['std']['value']
 
             if desired_std < 0.001:
                 return desired_mean
 
-            variance = desired_std**2
-            mean_squared = desired_mean**2
+            variance = desired_std ** 2
+            mean_squared = desired_mean ** 2
 
             mu = math.log(mean_squared / math.sqrt(mean_squared + variance))
             sigma = math.sqrt(math.log(1 + variance / mean_squared))
 
             return random.lognormvariate(mu, sigma)
 
-        elif dist_type == "bernoulli":
-            p = dist["p"]["value"]
+        elif dist_type == 'bernoulli':
+            p = dist['p']['value']
             return 1 if random.random() < p else 0
 
         return 0.0
@@ -449,15 +548,13 @@ class CafeSimulation:
         size = int(max(1, round(self._sample_distribution(ctype_node.group_size))))
         patience = self._sample_distribution(ctype_node.queue_patience)
         wants_table = bool(self._sample_distribution(ctype_node.wants_table))
-        consumption_modifier = self._sample_distribution(
-            ctype_node.consumption_speed_modifier
-        )
+        consumption_modifier = self._sample_distribution(ctype_node.consumption_speed_modifier)
 
         return {
-            "size": size,
-            "patience": patience,
-            "wants_table": wants_table,
-            "consumption_modifier": consumption_modifier,
+            'size': size,
+            'patience': patience,
+            'wants_table': wants_table,
+            'consumption_modifier': consumption_modifier
         }
 
     def _select_categories(self, customer_type_id):
@@ -544,43 +641,78 @@ class CafeSimulation:
     # SIMPY PROCESY
     # ============================================================
 
-    def _process_order_at_cashier(self, group_size):
+    def _process_order_at_cashier(self, group_size, patience):
         """
         Proces přijetí objednávky u pokladny.
-        Pro každého člena skupiny vzorkuje čas samostatně.
-
+        VČETNĚ čekání ve frontě s timeoutem.
+        
+        Args:
+            group_size: počet osob ve skupině
+            patience: maximální čekací doba
+        
         Yields SimPy events.
+        Returns: True pokud obslouženo, False pokud timeout
         """
         order_proc = self._config.order_process
-        cashier_id = 3  # ID pokladního
+        resources_needed = order_proc.task_used_resources.value
 
-        if cashier_id not in self._res_man.resources:
-            print(f"VAROVÁNÍ: Pokladní (ID {cashier_id}) neexistuje!")
-            return
+        requests = []
+        for res_id_str, count_needed in resources_needed.items():
+            res_id = int(res_id_str)
 
-        cashier = self._res_man.resources[cashier_id]
+            if res_id not in self._res_man.resources:
+                print(f"VAROVÁNÍ: Zdroj ID {res_id} neexistuje!")
+                continue
 
-        with cashier.request() as req:
-            yield req
+            resource = self._res_man.resources[res_id]
 
-            # Pro každého člena skupiny vzorkuj čas
-            total_time = 0
-            for _ in range(group_size):
-                member_time = self._sample_distribution(order_proc.order_process_time)
-                total_time += member_time
+            for _ in range(int(count_needed)):
+                req = resource.request()
+                requests.append((resource, req))
 
-            yield self._env.timeout(total_time)
+        if not requests:
+            return False
+
+        # ČEKÁNÍ VE FRONTĚ s timeoutem = patience
+        all_reqs = [req for _, req in requests]
+        result = yield simpy.events.AllOf(self._env, all_reqs) | self._env.timeout(patience)
+
+        # Kontrola, zda jsme dostali všechny zdroje nebo timeout
+        if not all(req.triggered for req in all_reqs):
+            # Timeout - uvolni co máme a odejdi
+            for resource, req in requests:
+                if req.triggered:
+                    # Byl splněn -> uvolni
+                    resource.release(req)
+                else:
+                    # Ještě čeká ve frontě -> zruš
+                    req.cancel()
+            return False
+
+        # JSME U POKLADNY - zpracování
+        total_time = 0
+        for _ in range(group_size):
+            member_time = self._sample_distribution(order_proc.order_process_time)
+            total_time += member_time
+
+        yield self._env.timeout(total_time)
+
+        # Uvolnění zdrojů
+        for resource, req in requests:
+            resource.release(req)
+
+        return True
 
     def _prepare_item(self, item_id):
         """
         Generator pro přípravu jedné položky podle receptu.
         Kroky probíhají SEKVENČNĚ.
-
+        
         Yields SimPy events.
         """
         menu_item = self._config.menu_items.__dict__.get(str(item_id))
 
-        if not menu_item or not hasattr(menu_item, "recipe"):
+        if not menu_item or not hasattr(menu_item, 'recipe'):
             return
 
         # Získej všechny kroky a seřaď podle ID
@@ -594,7 +726,7 @@ class CafeSimulation:
 
         # Proveď kroky SEKVENČNĚ
         for step_id, step_node in recipe_steps:
-            if not hasattr(step_node, "task_used_resources"):
+            if not hasattr(step_node, 'task_used_resources'):
                 continue
 
             resources_needed = step_node.task_used_resources.value
@@ -625,14 +757,14 @@ class CafeSimulation:
             for resource, req in requests:
                 resource.release(req)
 
-    def _try_get_tables(self, group_size, patience):
+    def _try_get_tables(self, group_size):
         """
-        Pokusí se získat stoly pro skupinu.
-
+        Pokusí se OKAMŽITĚ získat stoly pro skupinu.
+        Neblokuje - buď jsou dostupné HNED nebo ne.
+        
         Args:
             group_size: počet osob
-            patience: jak dlouho čekat
-
+        
         Yields SimPy events.
         Vrací: table_requests nebo None
         """
@@ -640,23 +772,22 @@ class CafeSimulation:
         allocation = self._table_man.find_best_table_combination(group_size)
 
         if allocation is None:
+            # Žádné stoly nejsou dostupné HNED
             return None
 
-        # Request místa
+        # Request místa - OKAMŽITĚ (bez čekání)
         table_requests = self._table_man.request_tables(allocation)
 
-        # Čekej na všechna místa (s timeout)
+        # Kontrola, jestli jsme všechny dostali HNED
         all_reqs = []
         for _, reqs in table_requests:
             all_reqs.extend(reqs)
 
-        result = yield simpy.events.AllOf(self._env, all_reqs) | self._env.timeout(
-            patience
-        )
+        # Zkusíme je získat s nulovým timeoutem
+        result = yield simpy.events.AllOf(self._env, all_reqs) | self._env.timeout(0)
 
-        # Zkontroluj, zda jsme dostali všechna místa
+        # Pokud nejsou všechny dostupné OKAMŽITĚ, uvolni a vrať None
         if not all(req.triggered for req in all_reqs):
-            # Timeout - uvolni co máme
             self._table_man.release_tables(table_requests)
             return None
 
@@ -665,21 +796,54 @@ class CafeSimulation:
     def _group_process(self, customer_type_id):
         """
         Kompletní proces skupiny zákazníků.
+        
+        NOVÁ LOGIKA:
+        1. Příchod
+        2. Chce stůl? → Pokus o obsazení HNED
+           - Nepodaří se → RENEGED
+        3. Fronta na pokladnu (s timeoutem = patience)
+           - Timeout → Uvolni stůl (pokud má) → RENEGED
+        4. Proces u pokladny
+        5. Generování objednávek
+        6. Příprava
+        7. Konzumace u stolu (už obsazený)
+        8. Uvolnění stolu
+        9. SERVED
         """
         self._groups += 1
 
         # 1. VYGENERUJ PARAMETRY SKUPINY
         params = self._generate_group_parameters(customer_type_id)
 
-        group_size = params["size"]
-        patience = params["patience"]
-        wants_table = params["wants_table"]
-        consumption_modifier = params["consumption_modifier"]
+        group_size = params['size']
+        patience = params['patience']
+        wants_table = params['wants_table']
+        consumption_modifier = params['consumption_modifier']
 
-        # 2. PROCES U POKLADNY
-        yield from self._process_order_at_cashier(group_size)
+        table_requests = None  # Pro uvolnění při timeoutu
 
-        # 3. GENEROVÁNÍ OBJEDNÁVEK (teprve po pokladně)
+        # 2. KONTROLA A OBSAZENÍ STOLŮ (pokud chce)
+        if wants_table:
+            table_requests = yield from self._try_get_tables(group_size)
+
+            if table_requests is None:
+                # Nejsou volné stoly → odchází HNED
+                self._reneged += group_size
+                return  # KONEC
+
+        # 3. ČEKÁNÍ NA POKLADNU + PROCES (s timeoutem = patience)
+        success = yield from self._process_order_at_cashier(group_size, patience)
+
+        if not success:
+            # Timeout ve frontě na pokladnu
+            # UVOLNI STOLY (pokud je má)
+            if table_requests:
+                self._table_man.release_tables(table_requests)
+
+            self._reneged += group_size
+            return  # KONEC
+
+        # 4. GENEROVÁNÍ OBJEDNÁVEK (teprve po úspěšné pokladně)
         all_orders = []
         customer_consumption_times = []
 
@@ -692,34 +856,24 @@ class CafeSimulation:
             customer_consumption_times.append(customer_time)
 
         # Skupina čeká na nejpomalejšího
-        group_consumption_time = (
-            max(customer_consumption_times) if customer_consumption_times else 0
-        )
+        group_consumption_time = max(customer_consumption_times) if customer_consumption_times else 0
 
-        # 4. PŘÍPRAVA OBJEDNÁVEK
+        # 5. PŘÍPRAVA OBJEDNÁVEK
         for order in all_orders:
             for item_id in order:
                 yield from self._prepare_item(item_id)
 
-        # 5. SEDADLA - pokud chtějí a mají co konzumovat
-        if wants_table and group_consumption_time > 0:
-            table_result = yield from self._try_get_tables(group_size, patience)
+        # 6. KONZUMACE U STOLU (pokud má stůl a má co konzumovat)
+        if table_requests and group_consumption_time > 0:
+            # UŽ MÁ STŮL OBSAZENÝ
+            adjusted_time = group_consumption_time * consumption_modifier
+            yield self._env.timeout(adjusted_time)
 
-            if table_result:
-                # Máme stůl - konzumace
-                adjusted_time = group_consumption_time * consumption_modifier
-                yield self._env.timeout(adjusted_time)
+            # 7. UVOLNĚNÍ STOLU
+            self._table_man.release_tables(table_requests)
 
-                # Uvolnění stolu
-                self._table_man.release_tables(table_result)
-
-                self._served += group_size
-            else:
-                # Nepodařilo se získat stůl
-                self._reneged += group_size
-        else:
-            # Nechtějí stůl nebo nemají co konzumovat
-            self._served += group_size
+        # 8. HOTOVO
+        self._served += group_size
 
     def _customer_generator(self):
         """Generátor zákazníků podle časových intervalů."""
@@ -778,9 +932,7 @@ class CafeSimulation:
             last_time = self._env.now
 
             # Počet obsazených sedadel
-            seats_occupied = (
-                self._table_man.get_total_occupied() if self._table_man else 0
-            )
+            seats_occupied = self._table_man.get_total_occupied() if self._table_man else 0
 
             # Fronty u zdrojů
             q_cashier = (
@@ -862,6 +1014,7 @@ class CafeSimulation:
             self._res_man = ResourceManager(self._env, self._config)
             self._table_man = TableManager(self._env, self._config)
 
+            # Zjisti celkovou kapacitu stolů
             total_table_capacity = self._table_man.get_total_capacity()
 
             self._status_log = StatusLog(
@@ -909,8 +1062,9 @@ class CafeSimulation:
 
             self._env.run(until=end_time)
             self._pbar.close()
-            print(f"\n--- HOTOVO ---")
-            print(f"Obslouženo: {self._served}, Odešlo: {self._reneged}")
+
+            # Zobrazení metrik
+            self._status_log.print_summary()
 
         if b:
             b.disabled = False
@@ -936,6 +1090,28 @@ class CafeSimulation:
                 ]
             )
         )
+
+    def get_last_metrics(self):
+        """
+        Vrátí metriky z posledního běhu simulace.
+        
+        Returns:
+            dict s metrikami nebo None
+        """
+        if self._status_log:
+            return self._status_log.get_metrics()
+        return None
+
+    def get_last_data(self):
+        """
+        Vrátí časovou řadu dat z posledního běhu.
+        
+        Returns:
+            pandas.DataFrame nebo None
+        """
+        if self._status_log:
+            return self._status_log.export_data()
+        return None
 
 
 # --- Spuštění v notebooku ---

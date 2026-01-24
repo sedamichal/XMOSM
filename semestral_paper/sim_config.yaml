@@ -168,9 +168,9 @@ customer_types:
       dist:
         type: lognormvariate
         mean:
-          value: 0.5976
+          value: 2.0086
         std:
-          value: 0.1992
+          value: 0.3984
     consumption_speed_modifier:
       dist:
         type: lognormvariate
@@ -201,9 +201,9 @@ customer_types:
       dist:
         type: lognormvariate
         mean:
-          value: 1.992
+          value: 5.0464
         std:
-          value: 0.5976
+          value: 0.9628
     consumption_speed_modifier:
       dist:
         type: lognormvariate
@@ -235,9 +235,9 @@ customer_types:
       dist:
         type: lognormvariate
         mean:
-          value: 1.992
+          value: 5.0464
         std:
-          value: 0.5976
+          value: 2.0252
     consumption_speed_modifier:
       dist:
         type: lognormvariate
@@ -269,9 +269,9 @@ customer_types:
       dist:
         type: lognormvariate
         mean:
-          value: 0.5976
+          value: 3.0212
         std:
-          value: 0.1992
+          value: 1.992
     consumption_speed_modifier:
       dist:
         type: lognormvariate
@@ -302,9 +302,9 @@ customer_types:
       dist:
         type: lognormvariate
         mean:
-          value: 0.996
+          value: 3.0378
         std:
-          value: 0.3984
+          value: 1.0126
     consumption_speed_modifier:
       dist:
         type: lognormvariate
@@ -431,13 +431,13 @@ used_resources:
         time_range:
           range:
           - 420
-          - 900
+          - 781
         capacity_count:
           value: 1.0
       2:
         time_range:
           range:
-          - 900
+          - 781
           - 1260
         capacity_count:
           value: 1.0
@@ -450,16 +450,16 @@ used_resources:
         time_range:
           range:
           - 420
-          - 900
+          - 781
         capacity_count:
           value: 2.0
       2:
         time_range:
           range:
-          - 900
+          - 781
           - 1260
         capacity_count:
-          value: 3.0
+          value: 2.0
 tables:
   label: Kapacita k sezení
   1:
@@ -467,13 +467,13 @@ tables:
     table_capacity:
       value: 4
     tables_count:
-      value: 4
+      value: 5.0
   2:
     label: Stul typ 2
     table_capacity:
       value: 6
     tables_count:
-      value: 4
+      value: 6.0
 item_categories:
   label: Kategorie položek menu
   1:

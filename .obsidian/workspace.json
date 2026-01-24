@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "ukol2.md",
+                "file": "semestral_paper/semestralni_prace.md",
                 "mode": "preview",
                 "source": true
               },
               "icon": "lucide-file",
-              "title": "ukol2"
+              "title": "semestralni_prace"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "ukol2.md",
+                "file": "semestral_paper/semestralni_prace.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Zpětné odkazy pro ukol2"
+              "title": "Zpětné odkazy pro semestralni_prace"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "ukol2.md",
+                "file": "semestral_paper/semestralni_prace.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Odchozí odkazy z ukol2"
+              "title": "Odchozí odkazy z semestralni_prace"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "ukol2.md",
+                "file": "semestral_paper/semestralni_prace.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Přehled ukol2"
+              "title": "Přehled semestralni_prace"
             }
           },
           {
@@ -196,6 +196,7 @@
   },
   "active": "19bdd96347934173",
   "lastOpenFiles": [
+    "ukol2.md",
     "semestral_paper/semestralni_prace.md",
     "documents/tahak.pdf",
     "documents/tahak_tmp.html",
@@ -213,7 +214,6 @@
     "SimPy/README_HLAVNI.md",
     "ukol2.png",
     "ukol2.svg",
-    "ukol2.md",
     "Untitled Diagram.svg",
     "documents/feedback_loop.png",
     "ukol1.md"
